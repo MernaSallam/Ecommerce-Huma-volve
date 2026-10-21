@@ -1,3 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/core/network/api_client.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/models/signup_req_model.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/services/signup_sevices.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/custom_text_field.dart';
@@ -17,12 +21,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController nameController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  bool isLoading = false;
+  late final ApiClient apiClient;
+  late final SignUpServices signUpServices;
+
+  Future<void> _signUp() async {
+    try {
+      if (_formKey.currentState?.validate() ?? false) {
+        setState(() {
+          isLoading = true;
+        });
+        final response = await signUpServices.signUp(
+          SignUpReqModel(
+            name: nameController.text,
+            email: emailController.text,
+            password: passwordController.text,
+          ),
+        );
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign up successful!Login plz'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    } on DioException catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sign up failed: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    apiClient = ApiClient();
+    signUpServices = SignUpServices(apiClient);
 
     super.initState();
   }
@@ -109,17 +159,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 40),
                 PrimaryButton(
+                  isLoading: isLoading,
                   text: 'Sign Up',
-                  onPressed: () async {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _signUp,
                 ),
                 const SizedBox(height: 24),
                 Row(
