@@ -18,4 +18,15 @@ class HomeCubit extends Cubit<HomeStates> {
       emit(CategoriesError(e.toString()));
     }
   }
+
+  Future<void> loadProducts(int? categoryId) async {
+  emit(ProductsLoading());
+
+  try {
+    final products = await homeServices.getProducts(categoryId);
+    emit(ProductsSuccess(products));
+  } catch (e) {
+    emit(ProductsError(e.toString()));
+  }
+}
 }

@@ -156,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     setState(() {
                                       _selectedCategoryIndex = index;
                                     });
+                                    context.read<HomeCubit>().loadProducts(categories[index].id);
                                   },
                                 );
                               },
@@ -176,16 +177,46 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  return ProductCard(product: dummyProducts[index]);
-                }, childCount: dummyProducts.length),
+              sliver: BlocBuilder<HomeCubit, HomeStates>(
+                buildWhen: (previous, current) =>
+                    current is ProductsLoading ||
+                    current is ProductsError ||
+                    current is ProductsSuccess,
+                builder: (context, state) {
+                  if (state is ProductsLoading) {
+                    return const SliverToBoxAdapter(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (state is ProductsError) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Text(
+                          'Error loading products: ${state.errorMessage}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
+                  if (state is ProductsSuccess) {
+                    final products = state.products;
+                    return SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.7,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) =>
+                            ProductCard(product: products[index]),
+                        childCount: products.length,
+                      ),
+                    );
+                  }
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                },
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
