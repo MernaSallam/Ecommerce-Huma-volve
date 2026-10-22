@@ -11,7 +11,7 @@ class LoginServices {
     required String password,
   }) async {
     final response = await apiClient.dio.post(
-      ApiEndpoints.authLogin,
+      ApiEndpoints.authLoginEndpoint,
       data: {'email': email, 'password': password},
     );
     final Map<String, dynamic> jsonData = response.data;

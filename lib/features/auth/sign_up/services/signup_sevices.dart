@@ -8,7 +8,7 @@ class SignUpServices {
   SignUpServices(this.apiClient);
   Future<SignUpResModel> signUp(SignUpReqModel signUpReqModel) async {
     final response = await apiClient.dio.post(
-      ApiEndpoints.users,
+      ApiEndpoints.signInEndpoint,
       data: {
         "email": signUpReqModel.email,
         "name": signUpReqModel.name,
