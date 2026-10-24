@@ -23,6 +23,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late final HomeServices homeServices;
   late final HomeCubit homeCubit;
 
+  @override
   initState() {
     apiClient = ApiClient();
     homeServices = HomeServices(apiClient);
@@ -33,13 +34,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<Widget> screens = [
       BlocProvider(create: (context) => homeCubit, child: const HomeScreen()),
       const CartScreen(),
       const ProfileScreen(),
     ];
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
