@@ -122,9 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (current is CategoriesLoading ||
                             current is CategoriesError ||
                             current is CategoriesSuccess) {
-                          return true;
-                        } else {
                           return false;
+                        } else {
+                          return true;
                         }
                       },
                       builder: (context, state) {
