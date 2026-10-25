@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
 import '../../../core/widgets/primary_button.dart';
-import '../../home/services/models/product_model.dart';
+import '../../home/data/models/product_model.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
-  final ProductModel product;
+  final HomeProductModel product;
 
   const ProductDetailsScreen({super.key, required this.product});
 

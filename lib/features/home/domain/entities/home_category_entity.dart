@@ -1,8 +1,6 @@
-class HOMECategoryEntity {
-  final int? id;
-  final String? name;
+class HomeCategoryEntity {
+   int? id;
+   String? name;
 
-  const HOMECategoryEntity({this.id, this.name});
-
-  
+   HomeCategoryEntity({this.id, this.name});
 }
