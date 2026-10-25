@@ -24,7 +24,7 @@ class ErrorHandler {
     }
 
     if (errorMessage.contains('404') || errorMessage.contains('Not Found')) {
-      return Failure(failureMessage: "404 Not Found");
+      return Failure(failureMessage: "404 Not Found, Please try again later");
     }
 
     if (errorMessage.contains('422') ||

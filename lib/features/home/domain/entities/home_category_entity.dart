@@ -1,6 +1,6 @@
 class HomeCategoryEntity {
-   int? id;
-   String? name;
+   int id;
+   String name;
 
-   HomeCategoryEntity({this.id, this.name});
+   HomeCategoryEntity({this.id =0, this.name=''});
 }
