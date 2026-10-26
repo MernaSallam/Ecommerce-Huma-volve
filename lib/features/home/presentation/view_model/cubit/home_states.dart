@@ -34,3 +34,22 @@ class ProductsError extends HomeStates {
 
   ProductsError(this.errorMessage);
 }
+
+class ProductsLoadingMore extends HomeStates {
+  final List<HomeProductEntity> products;
+
+  ProductsLoadingMore(this.products);
+}
+
+class ProductsLoadingMoreSuccess extends HomeStates {
+  final List<HomeProductEntity> products;
+
+  ProductsLoadingMoreSuccess(this.products);
+}
+
+class ProductsLoadingMoreError extends HomeStates {
+  final String errorMessage;
+  final List<HomeProductEntity> products;
+
+  ProductsLoadingMoreError(this.errorMessage, this.products);
+}

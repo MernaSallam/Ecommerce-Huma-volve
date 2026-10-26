@@ -7,7 +7,7 @@ class HomeProductEntity {
   final int price;
   final String description;
   final HomeCategoryEntity category;
-  final List<String> images;
+   List<String> images;
 
   HomeProductEntity({
     this.id = 0,
