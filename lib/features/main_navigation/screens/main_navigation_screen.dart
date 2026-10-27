@@ -1,11 +1,17 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:ecommerce_app_huma_volve/core/network/api_client.dart';
+import 'package:ecommerce_app_huma_volve/core/constants/product_link.dart';
 import 'package:ecommerce_app_huma_volve/features/home/data/data_source/home_remote_datasource.dart';
 import 'package:ecommerce_app_huma_volve/features/home/data/data_source/home_remote_datasource_imp.dart';
 import 'package:ecommerce_app_huma_volve/features/home/data/repository/home_repository_imp.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/repository/home_repository.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/user_cases/get_categories_usecase.dart';
+import 'package:ecommerce_app_huma_volve/features/home/domain/user_cases/get_product_by_id_usecase.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/user_cases/get_products_usecase.dart';
 import 'package:ecommerce_app_huma_volve/features/home/presentation/view_model/cubit/home_cubit.dart';
+import 'package:ecommerce_app_huma_volve/features/details/presentation/screens/product_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,26 +34,88 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late final HomeRepository homeRepository;
   late final GetCategoriesUseCase getCategoriesUseCase;
   late final GetProductsUseCase getProductsUseCase;
+  late final GetProductByIdUseCase getProductByIdUseCase;
   late final HomeCubit homeCubit;
+  late final AppLinks appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+  int _linkRequestGeneration = 0;
 
   @override
   initState() {
+    super.initState();
     apiClient = ApiClient();
     homeRemoteDataSource = HomeRemoteDataSourceImp(apiClient);
     homeRepository = HomeRepositoryImp(homeRemoteDataSource);
     getCategoriesUseCase = GetCategoriesUseCase(homeRepository);
     getProductsUseCase = GetProductsUseCase(homeRepository);
+    getProductByIdUseCase = GetProductByIdUseCase(homeRepository);
     homeCubit = HomeCubit(
       getProductsUseCase: getProductsUseCase,
       getCategoriesUseCase: getCategoriesUseCase,
     );
-    super.initState();
+    _initializeDeepLinks();
+  }
+
+  Future<void> _initializeDeepLinks() async {
+    appLinks = AppLinks();
+    _linkSubscription = appLinks.uriLinkStream.listen(
+      _handleIncomingLink,
+      onError: (Object error) {
+        debugPrint('Product deep-link stream failed: $error');
+      },
+    );
+
+    final initialLink = await appLinks.getInitialLink();
+    if (initialLink != null) {
+      await _handleIncomingLink(initialLink);
+    }
+  }
+
+  Future<void> _handleIncomingLink(Uri uri) async {
+    if (uri.scheme != ProductLink.scheme ||
+        uri.host != ProductLink.productHost ||
+        uri.pathSegments.length != 1) {
+      return;
+    }
+
+    final productId = int.tryParse(uri.pathSegments.single);
+    if (productId == null) return;
+
+    final requestGeneration = ++_linkRequestGeneration;
+    final result = await getProductByIdUseCase.invoke(productId);
+    if (!mounted || requestGeneration != _linkRequestGeneration) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not open shared product: ${failure.failureMessage}',
+            ),
+          ),
+        );
+      },
+      (product) {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => ProductDetailsScreen(product: product),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    homeCubit.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      BlocProvider(create: (context) => homeCubit, child: const HomeScreen()),
+      BlocProvider.value(value: homeCubit, child: const HomeScreen()),
       const CartScreen(),
       const ProfileScreen(),
     ];

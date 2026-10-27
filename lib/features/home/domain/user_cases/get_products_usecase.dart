@@ -73,7 +73,7 @@ class GetProductsUseCase {
 
     if (uri == null) return false;
 
-    if (!uri.hasScheme || !(uri.scheme == 'http' && uri.scheme == 'https')) {
+    if (!uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
       return false;
     }
     // Validation logic goes here
